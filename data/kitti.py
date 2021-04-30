@@ -19,7 +19,6 @@ KITTI_CLASSES= [
     'Cyclist','Tram','Misc','DontCare'
     ]
 
-
 class Class_to_ind(object):
     def __init__(self,binary,binary_item):
         self.binary=binary
@@ -72,7 +71,8 @@ class AnnotationTransform_kitti(object):
 
 class KittiLoader(data.Dataset):
     def __init__(self, root, split="training",
-                 img_size=512, transforms=None,target_transform=None):
+                 img_size= 512
+                 , transforms=None,target_transform=None):
         self.root = root
         self.split = split
         self.target_transform = target_transform
@@ -83,6 +83,8 @@ class KittiLoader(data.Dataset):
         self.labels = collections.defaultdict(list)
         self.transforms = transforms
         self.name='kitti'
+
+        print("Root: ",root)
 
         for split in ["training", "testing"]:
             file_list = glob(os.path.join(root, split, 'image_2', '*.png'))

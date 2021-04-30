@@ -8,8 +8,8 @@ import torch.nn.init as init
 import argparse
 from torch.autograd import Variable
 import torch.utils.data as data
-from data import AnnotationTransform, VOCDetection, detection_collate, VOCroot, VOC_CLASSES
-from data import KittiLoader, AnnotationTransform_kitti,Class_to_ind
+from data import AnnotationTransform, detection_collate, KITTIroot
+from data import KittiLoader, AnnotationTransform_kitti,Class_to_ind, KITTI_CLASSES
 
 from utils.augmentations import SSDAugmentation
 from layers.modules import MultiBoxLoss
@@ -22,12 +22,12 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detector Training')
-parser.add_argument('--dim', default=512, type=int, help='Size of the input image, only support 300 or 512')
-parser.add_argument('-d', '--dataset', default='VOC',help='VOC or COCO dataset')
+parser.add_argument('--dim', default=192, type=int, help='Size of the input image, only support 300 or 512')
+parser.add_argument('-d', '--dataset', default='kitti',help='VOC or KITTI dataset')
 
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth', help='pretrained base model')
 parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Jaccard index for matching')
-parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
+parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=120000, type=int, help='Number of training iterations')
@@ -39,7 +39,7 @@ parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for S
 parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
 parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
-parser.add_argument('--data_root', default=VOCroot, help='Location of VOC root directory')
+parser.add_argument('--data_root', default=KITTIroot, help='Location of kitti root directory')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -52,12 +52,12 @@ if not os.path.exists(args.save_folder):
 
 train_sets = [('2007', 'trainval'), ('2012', 'trainval')]
 # train_sets = 'train'
-means = (104, 117, 123)  # only support voc now
+means = (104.00699, 116.66877, 122.67892)  # only support voc now
 if args.dataset=='VOC':
     num_classes = len(VOC_CLASSES) + 1
 elif args.dataset=='kitti':
-    num_classes = 1+1
-accum_batch_size = 32
+    num_classes = 11
+accum_batch_size = 2
 iter_size = accum_batch_size / args.batch_size
 stepvalues = (60000, 80000, 100000)
 start_iter = 0
@@ -78,17 +78,17 @@ if args.resume:
     ssd_net.load_weights(args.resume)
     start_iter = int(agrs.resume.split('/')[-1].split('.')[0].split('_')[-1])
 else:
-    vgg_weights = torch.load(args.save_folder + args.basenet)
-    log.l.info('Loading base network...')
-    ssd_net.vgg.load_state_dict(vgg_weights)
+#    vgg_weights = torch.load(args.save_folder + args.basenet)
+#    log.l.info('Loading base network...')
+#    ssd_net.vgg.load_state_dict(vgg_weights)
     start_iter = 0
 
 if args.cuda:
     net = net.cuda()
-
+    torch.cuda.empty_cache()
 
 def xavier(param):
-    init.xavier_uniform(param)
+    init.xavier_uniform_(param)
 
 
 def weights_init(m):
@@ -117,13 +117,17 @@ def DatasetSync(dataset='VOC',split='training'):
         dataset = VOCDetection(DataRoot, train_sets, SSDAugmentation(
         args.dim, means), AnnotationTransform())
     elif dataset=='kitti':
+
+        print("Syncing KITTI dataset...")
         DataRoot=os.path.join(args.data_root,'kitti')
-        dataset = KittiLoader(DataRoot, split=split,img_size=(1000,300),
-                  transforms=SSDAugmentation((1000,300),means),
+        dataset = KittiLoader(DataRoot, split=split,img_size=(192, 624),
+                  transforms=SSDAugmentation((192,624),means),
                   target_transform=AnnotationTransform_kitti())
+
     return dataset
 
 def train():
+    torch.cuda.empty_cache()
     net.train()
     # loss counters
     loc_loss = 0  # epoch
@@ -162,10 +166,14 @@ def train():
             )
         )
     batch_iterator = None
+
     data_loader = data.DataLoader(dataset, args.batch_size, num_workers=args.num_workers,
                                   shuffle=True, collate_fn=detection_collate, pin_memory=True)
 
+    #assign learning rate
     lr=args.lr
+
+    #training
     for iteration in range(start_iter, args.iterations + 1):
         if (not batch_iterator) or (iteration % epoch_size == 0):
             # create batch iterator

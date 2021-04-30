@@ -54,7 +54,6 @@ class AnnotationTransform_kitti(object):
         self.levels=levels if isinstance(levels,list) else [levels]
 
     def __call__(self,target_lines,width,height):
-
         res=list()
         for line in target_lines:
             xmin,ymin,xmax,ymax=tuple(line.strip().split(' ')[4:8])

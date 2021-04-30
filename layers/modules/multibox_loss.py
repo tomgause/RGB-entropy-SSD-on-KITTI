@@ -85,7 +85,12 @@ class MultiBoxLoss(nn.Module):
 
         # Localization Loss (Smooth L1)
         # Shape: [batch,num_priors,4]
+        #print('loc_data size: ', len(loc_data[0]))
+
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(loc_data)
+        #pos2 = pos.unsqueeze(pos.dim()).view(loc_data.size(0),loc_data.size(1),-1)
+        #pos_idx = pos2.expand_as(loc_data)
+
         loc_p = loc_data[pos_idx].view(-1, 4)
         loc_t = loc_t[pos_idx].view(-1, 4)
         loss_l = F.smooth_l1_loss(loc_p, loc_t, size_average=False)

@@ -129,6 +129,9 @@ class SSD(nn.Module):
 def vgg(i):
     in_channels = i
     layers = [
+
+        # TODO: Adjust network architecture (obviously)
+
         # Conv1_1, Conv1_2, Pool1
         nn.Conv2d(in_channels, 64, kernel_size=3, padding=1), nn.BatchNorm2d(64), nn.ReLU(),
         nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.BatchNorm2d(64), nn.ReLU(),
@@ -167,15 +170,15 @@ def add_extras():
 
         # Conv8_1, Conv8_2 FOURTH SOURCE
         nn.Conv2d(1024, 256, kernel_size=1), nn.BatchNorm2d(256), nn.ReLU(),
-        nn.Conv2d(256, 512, kernel_size=3, padding=1), nn.BatchNorm2d(512), nn.ReLU(),
+        nn.Conv2d(256, 512, kernel_size=3, padding=0), nn.BatchNorm2d(512), nn.ReLU(),
 
         # Conv9_1, Conv9_2 FIFTH SOURCE
         nn.Conv2d(512, 128, kernel_size=1), nn.BatchNorm2d(128), nn.ReLU(),
-        nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1), nn.BatchNorm2d(256), nn.ReLU(),
+        nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=0), nn.BatchNorm2d(256), nn.ReLU(),
 
         # Conv10_1, Conv10_2 SIXTH SOURCE
         nn.Conv2d(256, 128, kernel_size=1), nn.BatchNorm2d(128), nn.ReLU(),
-        nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1), nn.BatchNorm2d(256), nn.ReLU()
+        nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=0), nn.BatchNorm2d(256), nn.ReLU()
     ]
     return layers
 

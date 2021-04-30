@@ -206,27 +206,33 @@ def train():
         # forward
         t0 = time.time()
         out = net(images)
+
+        #print('TARGET SIZE: ', len(targets[0]))
+        #print('OUT SIZE: ', len(out[2]))
+
         # backprop
+        # loss_l and loss_c .data[0] replaced by .item()
+
         optimizer.zero_grad()
         loss_l, loss_c = criterion(out, targets)
         loss = loss_l + loss_c
         loss.backward()
         optimizer.step()
         t1 = time.time()
-        loc_loss += loss_l.data[0]
-        conf_loss += loss_c.data[0]
+        loc_loss += loss_l.item() #loss_l.data[0]
+        conf_loss += loss_c.item() #loss_c.data[0]
         if iteration % 10 == 0:
             log.l.info('''
                 Timer: {:.5f} sec.\t LR: {}.\t Iter: {}.\t Loss_l: {:.5f}.\t Loss_c: {:.5f}.
-                '''.format((t1-t0),lr,iteration,loss_l.data[0],loss_c.data[0]))
+                '''.format((t1-t0),lr,iteration,loss_l.item(),loss_c.item()))
             if args.visdom and args.send_images_to_visdom:
                 random_batch_index = np.random.randint(images.size(0))
                 viz.image(images.data[random_batch_index].cpu().numpy())
         if args.visdom:
             viz.line(
                 X=torch.ones((1, 3)).cpu() * iteration,
-                Y=torch.Tensor([loss_l.data[0], loss_c.data[0],
-                    loss_l.data[0] + loss_c.data[0]]).unsqueeze(0).cpu(),
+                Y=torch.Tensor([loss_l.item(), loss_c.item(),
+                    loss_l.item() + loss_c.item()]).unsqueeze(0).cpu(),
                 win=lot,
                 update='append'
             )

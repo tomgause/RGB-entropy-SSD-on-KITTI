@@ -20,7 +20,7 @@ import time
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
-
+torch.autograd.set_detect_anomaly(True)
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detector Training')
 parser.add_argument('--dim', default=192, type=int, help='Size of the input image, only support 300 or 512')
 parser.add_argument('-d', '--dataset', default='kitti',help='VOC or KITTI dataset')
@@ -31,7 +31,7 @@ parser.add_argument('--batch_size', default=1, type=int, help='Batch size for tr
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=120000, type=int, help='Number of training iterations')
-parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to train model')
+parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=3e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')

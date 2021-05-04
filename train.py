@@ -9,8 +9,9 @@ import argparse
 from torch.autograd import Variable
 import torch.utils.data as data
 from data import AnnotationTransform, detection_collate, KITTIroot
-from data import KittiLoader, AnnotationTransform_kitti,Class_to_ind, KITTI_CLASSES
+from data import KittiLoader, AnnotationTransform_kitti,Class_to_ind, KITTI_CLASSES,voc0712
 
+import numpy as np
 from utils.augmentations import SSDAugmentation
 from layers.modules import MultiBoxLoss
 from ssd import build_ssd
@@ -30,7 +31,7 @@ parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Ja
 parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--iterations', default=120000, type=int, help='Number of training iterations')
+parser.add_argument('--iterations', default=251, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=3e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -54,7 +55,7 @@ train_sets = [('2007', 'trainval'), ('2012', 'trainval')]
 # train_sets = 'train'
 means = (104.00699, 116.66877, 122.67892)  # only support voc now
 if args.dataset=='VOC':
-    num_classes = len(VOC_CLASSES) + 1
+    num_classes = len(voc0712.VOC_CLASSES) + 1
 elif args.dataset=='kitti':
     num_classes = 11
 accum_batch_size = 2
@@ -68,7 +69,7 @@ if args.visdom:
 
 ssd_net = build_ssd('train', args.dim, num_classes)
 net = ssd_net
-
+net = net.float()
 if args.cuda:
     net = torch.nn.DataParallel(ssd_net)
     cudnn.benchmark = True
@@ -76,7 +77,7 @@ if args.cuda:
 if args.resume:
     log.l.info('Resuming training, loading {}...'.format(args.resume))
     ssd_net.load_weights(args.resume)
-    start_iter = int(agrs.resume.split('/')[-1].split('.')[0].split('_')[-1])
+    start_iter = int(args.resume.split('/')[-1].split('.')[0].split('_')[-1])###########
 else:
 #    vgg_weights = torch.load(args.save_folder + args.basenet)
 #    log.l.info('Loading base network...')
@@ -114,13 +115,13 @@ def DatasetSync(dataset='VOC',split='training'):
     if dataset=='VOC':
         #DataRoot=os.path.join(args.data_root,'VOCdevkit')
         DataRoot=args.data_root
-        dataset = VOCDetection(DataRoot, train_sets, SSDAugmentation(
+        dataset = voc0712.VOCDetection(DataRoot, train_sets, SSDAugmentation(
         args.dim, means), AnnotationTransform())
     elif dataset=='kitti':
 
         print("Syncing KITTI dataset...")
-        DataRoot=os.path.join(args.data_root,'kitti')
-        dataset = KittiLoader(DataRoot, split=split,img_size=(192, 624),
+        # DataRoot=os.path.join(args.data_root,'kitti')
+        dataset = KittiLoader(args.data_root, split=split,img_size=(192, 624),
                   transforms=SSDAugmentation((192,624),means),
                   target_transform=AnnotationTransform_kitti())
 
@@ -199,13 +200,16 @@ def train():
         #embed()
         if args.cuda:
             images = Variable(images.cuda())
-            targets = [Variable(anno.cuda(), volatile=True) for anno in targets]
+            with torch.no_grad():
+                targets = [Variable(anno.cuda()) for anno in targets]
         else:
             images = Variable(images)
-            targets = [Variable(anno, volatile=True) for anno in targets]
+            with torch.no_grad():
+                targets = [Variable(anno) for anno in targets]
         # forward
         t0 = time.time()
-        out = net(images)
+        ents=[]
+        out = net(images.float())
 
         #print('TARGET SIZE: ', len(targets[0]))
         #print('OUT SIZE: ', len(out[2]))
@@ -245,7 +249,7 @@ def train():
                     win=epoch_lot,
                     update=True
                 )
-        if iteration % 5000 == 0:
+        if iteration % 250 == 0:
             log.l.info('Saving state, iter: {}'.format(iteration))
             torch.save(ssd_net.state_dict(), 'weights/ssd' + str(args.dim) + '_0712_' +
                        repr(iteration) + '.pth')

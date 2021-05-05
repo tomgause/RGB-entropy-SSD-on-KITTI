@@ -32,7 +32,7 @@ parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Ja
 parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--iterations', default=250, type=int, help='Number of training iterations')
+parser.add_argument('--iterations', default=11, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=3e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -175,6 +175,10 @@ def train():
     #assign learning rate
     lr=args.lr
 
+    #for visualization
+    vis_loss_c=[]
+    vis_loss_l=[]
+
     #training
     for iteration in range(start_iter, args.iterations + 1):
         if (not batch_iterator) or (iteration % epoch_size == 0):
@@ -221,6 +225,11 @@ def train():
         loss.backward()
         optimizer.step()
         t1 = time.time()
+
+        #for visualization
+        vis_loss_c.append(loss_c.item())
+        vis_loss_l.append(loss_l.item())
+
         loc_loss += loss_l.item() #loss_l.data[0]
         conf_loss += loss_c.item() #loss_c.data[0]
         if iteration % 10 == 0:
@@ -253,9 +262,9 @@ def train():
                        repr(iteration) + '.pth')
     torch.save(ssd_net.state_dict(), args.save_folder + 'ssd_' + str(args.dim) + '.pth')
     if iteration == args.iterations:
-        epochs = range(1, len(loss_c) + 1)
-        plt.plot(epochs, loss_l, 'b--')
-        plt.plot(epochs, loss_c, 'r--')
+        epochs = range(1, len(vis_loss_c) + 1)
+        plt.plot(epochs, vis_loss_l, 'b--')
+        plt.plot(epochs, vis_loss_c, 'r--')
         plt.legend(['Location Loss', 'Confidence Loss'])
         plt.xlabel('Epoch')
         plt.ylabel('Loss')

@@ -49,7 +49,7 @@ class SSD(nn.Module):
         """Applies network layers and ops on input image(s) x.
 
         Args:
-            x: input image or batch of images. Shape: [batch,3,300,300]. or [batch,3,512,512]
+            x: input image or batch of images. Shape: [batch,3,192,624]
 
         Return:
             Depending on phase:
@@ -202,7 +202,7 @@ def multibox(vgg, extra_layers, cfg, num_classes):
 mbox = [4, 6, 6, 6, 6, 4] # of boxes per feature map location
 
 def build_ssd(phase, size=192, num_classes=11):
-    print("Building SSD...")
+    #print("Building SSD...")
     if phase != "test" and phase != "train":
         print("Error: Phase not recognized")
         return

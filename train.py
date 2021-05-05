@@ -18,6 +18,8 @@ from IPython import embed
 from log import log
 import time
 
+import matplotlib.pyplot as plt
+
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 torch.autograd.set_detect_anomaly(True)
@@ -30,7 +32,7 @@ parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Ja
 parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--iterations', default=120000, type=int, help='Number of training iterations')
+parser.add_argument('--iterations', default=250, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=3e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -250,6 +252,14 @@ def train():
             torch.save(ssd_net.state_dict(), 'weights/ssd' + str(args.dim) + '_0712_' +
                        repr(iteration) + '.pth')
     torch.save(ssd_net.state_dict(), args.save_folder + 'ssd_' + str(args.dim) + '.pth')
+    if iteration == args.iterations:
+        epochs = range(1, len(vis_loss_c) + 1)
+        plt.plot(epochs, vis_loss_l, 'b--')
+        plt.plot(epochs, vis_loss_c, 'r--')
+        plt.legend(['Location Loss', 'Confidence Loss'])
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.show()
 
     
 def adjust_learning_rate(optimizer, gamma, epoch, step_index, iteration, epoch_size):

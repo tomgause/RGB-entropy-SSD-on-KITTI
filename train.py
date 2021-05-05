@@ -253,9 +253,9 @@ def train():
                        repr(iteration) + '.pth')
     torch.save(ssd_net.state_dict(), args.save_folder + 'ssd_' + str(args.dim) + '.pth')
     if iteration == args.iterations:
-        epochs = range(1, len(vis_loss_c) + 1)
-        plt.plot(epochs, vis_loss_l, 'b--')
-        plt.plot(epochs, vis_loss_c, 'r--')
+        epochs = range(1, len(loss_c) + 1)
+        plt.plot(epochs, loss_l, 'b--')
+        plt.plot(epochs, loss_c, 'r--')
         plt.legend(['Location Loss', 'Confidence Loss'])
         plt.xlabel('Epoch')
         plt.ylabel('Loss')

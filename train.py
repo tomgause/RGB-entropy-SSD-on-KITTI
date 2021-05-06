@@ -122,7 +122,8 @@ def DatasetSync(dataset='VOC',split='training'):
     elif dataset=='kitti':
 
         print("Syncing KITTI dataset...")
-        # DataRoot=os.path.join(args.data_root,'kitti')
+        print(args.data_root)
+        #DataRoot=os.path.join(args.data_root,'kitti')
         dataset = KittiLoader(args.data_root, split=split,img_size=(192, 624),
                   transforms=SSDAugmentation((192,624),means),
                   target_transform=AnnotationTransform_kitti())

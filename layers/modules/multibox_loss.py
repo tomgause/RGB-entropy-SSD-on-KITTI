@@ -57,6 +57,7 @@ class MultiBoxLoss(nn.Module):
                 shape: [batch_size,num_objs,5] (last idx is the label).
         """
         loc_data, conf_data, priors = predictions
+
         # batch_size
         num = loc_data.size(0)
         priors = priors[:loc_data.size(1), :]
@@ -85,7 +86,9 @@ class MultiBoxLoss(nn.Module):
 
         # Localization Loss (Smooth L1)
         # Shape: [batch,num_priors,4]
-        pos_idx = pos.unsqueeze(pos.dim()).expand_as(loc_data)
+        #print("pos: ", pos.dim())
+        #print("loc: ", loc_data.dim())
+        pos_idx = pos.unsqueeze(pos.dim()).expand(loc_data.size())
         loc_p = loc_data[pos_idx].view(-1, 4)
         loc_t = loc_t[pos_idx].view(-1, 4)
         loss_l = F.smooth_l1_loss(loc_p, loc_t, size_average=False)
@@ -100,6 +103,7 @@ class MultiBoxLoss(nn.Module):
         _, loss_idx = loss_c.sort(1, descending=True)
         _, idx_rank = loss_idx.sort(1)
         loss_c[pos] = 0  # filter out pos boxes for now
+
 
         num_pos = pos.long().sum(1, keepdim=True)
         num_neg = torch.clamp(self.negpos_ratio*num_pos, max=pos.size(1)-1)

@@ -70,14 +70,14 @@ class AnnotationTransform_kitti(object):
 
 class KittiLoader(data.Dataset):
     def __init__(self, root, split="training",
-                 img_size= 512
+                 img_size= (384, 1280)
                  , transforms=None,target_transform=None):
         self.root = root
         self.split = split
         self.target_transform = target_transform
-        self.n_classes = 2
+        self.n_classes = 11
         self.img_size = img_size if isinstance(img_size, tuple) else (img_size, img_size)
-        self.mean = np.array([104.00699, 116.66877, 122.67892])
+        self.mean = np.array([123,117,104])
         self.files = collections.defaultdict(list)
         self.labels = collections.defaultdict(list)
         self.transforms = transforms

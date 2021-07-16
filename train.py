@@ -8,7 +8,7 @@ import torch.nn.init as init
 import argparse
 from torch.autograd import Variable
 import torch.utils.data as data
-from data import AnnotationTransform, detection_collate, KITTIroot
+from data import AnnotationTransform, detection_collate, KITTIroot, kitti_single_root
 from data import KittiLoader, AnnotationTransform_kitti,Class_to_ind, KITTI_CLASSES,voc0712
 
 import numpy as np
@@ -25,7 +25,7 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 torch.autograd.set_detect_anomaly(True)
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detector Training')
-parser.add_argument('--dim', default=192, type=int, help='Size of the input image, only support 300 or 512')
+parser.add_argument('--dim', default=384, type=int, help='Size of the input image, only support 300 or 512')
 parser.add_argument('-d', '--dataset', default='kitti',help='VOC or KITTI dataset')
 
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth', help='pretrained base model')
@@ -35,14 +35,14 @@ parser.add_argument('--resume', default=None, type=str, help='Resume from checkp
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=251, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
-parser.add_argument('--lr', '--learning-rate', default=3e-3, type=float, help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=5e-4, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
 parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
 parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
-parser.add_argument('--data_root', default=KITTIroot, help='Location of kitti root directory')
+parser.add_argument('--data_root', default=kitti_single_root, help='Location of kitti root directory')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -55,7 +55,7 @@ if not os.path.exists(args.save_folder):
 
 train_sets = [('2007', 'trainval'), ('2012', 'trainval')]
 # train_sets = 'train'
-means = (104.00699, 116.66877, 122.67892)  # only support voc now
+means = (123, 117, 104)  # KITTI
 if args.dataset=='VOC':
     num_classes = len(voc0712.VOC_CLASSES) + 1
 elif args.dataset=='kitti':
@@ -120,12 +120,9 @@ def DatasetSync(dataset='VOC',split='training'):
         dataset = voc0712.VOCDetection(DataRoot, train_sets, SSDAugmentation(
         args.dim, means), AnnotationTransform())
     elif dataset=='kitti':
-
-        print("Syncing KITTI dataset...")
-        print(args.data_root)
         #DataRoot=os.path.join(args.data_root,'kitti')
-        dataset = KittiLoader(args.data_root, split=split,img_size=(192, 624),
-                  transforms=SSDAugmentation((192,624),means),
+        dataset = KittiLoader(args.data_root, split=split,img_size=(384, 1280),
+                  transforms=SSDAugmentation((384,1280),means),
                   target_transform=AnnotationTransform_kitti())
 
     return dataset
@@ -172,7 +169,8 @@ def train():
     batch_iterator = None
 
     data_loader = data.DataLoader(dataset, args.batch_size, num_workers=args.num_workers,
-                                  shuffle=True, collate_fn=detection_collate, pin_memory=True)
+                                 shuffle=True, collate_fn=detection_collate, pin_memory=True)
+
 
     #assign learning rate
     lr=args.lr
@@ -211,8 +209,7 @@ def train():
                 targets = [Variable(anno) for anno in targets]
         # forward
         t0 = time.time()
-        ents=[]
-        out = net(images.float())
+        out = net(images)
 
         #print('TARGET SIZE: ', len(targets[0]))
         #print('OUT SIZE: ', len(out[2]))
@@ -221,14 +218,20 @@ def train():
         # loss_l and loss_c .data[0] replaced by .item()
 
         optimizer.zero_grad()
+
         loss_l, loss_c = criterion(out, targets)
         loss = loss_l + loss_c
         loss.backward()
+
+        # GRADIENT CLIPPING
+        #clip_param = 5
+        #torch.nn.utils.clip_grad_norm_(net.parameters(), clip_param)
+
         optimizer.step()
         t1 = time.time()
         loc_loss += loss_l.item() #loss_l.data[0]
         conf_loss += loss_c.item() #loss_c.data[0]
-        if iteration % 10 == 0:
+        if iteration % 1 == 0:
             log.l.info('''
                 Timer: {:.5f} sec.\t LR: {}.\t Iter: {}.\t Loss_l: {:.5f}.\t Loss_c: {:.5f}.
                 '''.format((t1-t0),lr,iteration,loss_l.item(),loss_c.item()))

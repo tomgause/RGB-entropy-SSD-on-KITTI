@@ -351,7 +351,7 @@ def multibox(vgg, extra_layers, cfg, num_classes):
     return vgg, extra_layers, (loc_layers, conf_layers)
 
 # TODO: determine ideal # of boxes for kitti
-mbox = [4, 6, 6, 6, 6, 4] # of boxes per feature map location
+mbox = [6, 6, 6, 6, 6, 6] # of boxes per feature map location
 
 def build_ssd(phase, size=384, num_classes=11):
     #print("Building SSD...")

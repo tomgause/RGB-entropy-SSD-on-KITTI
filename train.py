@@ -8,7 +8,7 @@ import torch.nn.init as init
 import argparse
 from torch.autograd import Variable
 import torch.utils.data as data
-from data import AnnotationTransform, detection_collate, KITTIroot, kitti_single_root
+from data import AnnotationTransform, detection_collate, KITTIroot, kitti_single_root, kitti_single_root_2
 from data import KittiLoader, AnnotationTransform_kitti,Class_to_ind, KITTI_CLASSES,voc0712
 
 import numpy as np
@@ -30,7 +30,7 @@ parser.add_argument('-d', '--dataset', default='kitti',help='VOC or KITTI datase
 
 parser.add_argument('--basenet', default='vgg16_reducedfc.pth', help='pretrained base model')
 parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Jaccard index for matching')
-parser.add_argument('--batch_size', default=8, type=int, help='Batch size for training')
+parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--iterations', default=251, type=int, help='Number of training iterations')
@@ -42,7 +42,7 @@ parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for S
 parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
 parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
-parser.add_argument('--data_root', default=KITTIroot, help='Location of kitti root directory')
+parser.add_argument('--data_root', default=kitti_single_root_2, help='Location of kitti root directory')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():

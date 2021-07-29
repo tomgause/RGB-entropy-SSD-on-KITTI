@@ -13,6 +13,10 @@ ddir = os.path.join(home,"data\\kitti_single\\")
 
 kitti_single_root = ddir # path to KITTI root div
 
+ddir = os.path.join(home,"data\\kitti_single_2\\")
+
+kitti_single_root_2 = ddir # path to KITTI root div
+
 # NO IDEA WHAT THIS SHOULD BE, COPIED 512 DATA.
 # EDITS HERE HAVE SIGNIFICANT CONSEQUENCES.
 # TODO: figure this out.
@@ -27,12 +31,12 @@ v = {
 
         'max_sizes' : [57.6, 115.2, 172.8, 230.4, 288, 345.6],
 
-        'aspect_ratios' : [[2, .5],
-                        [2, .5, 3, 1./3],
-                        [2, .5, 3, 1./3],
-                        [2, .5, 3, 1./3],
-                        [2, .5],
-                        [2, .5]],
+        'aspect_ratios' : [[2, 3, .5, 1./3, 2./3],
+                        [2, 3, .5, 1./3, 2./3],
+                        [2, 3, .5, 1./3, 2./3],
+                        [2, 3, .5, 1./3, 2./3],
+                        [2, 3, .5, 1./3, 2./3],
+                        [2, 3, .5, 1./3, 2./3]],
 
         'variance' : [0.1, 0.2],
 

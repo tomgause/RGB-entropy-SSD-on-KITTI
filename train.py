@@ -33,16 +33,17 @@ parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Ja
 parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--iterations', default=251, type=int, help='Number of training iterations')
+parser.add_argument('--iterations', default=100000000, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=5e-4, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
 parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
-parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
+parser.add_argument('--visdom', default=True, type=str2bool, help='Use visdom to for loss visualization')
+parser.add_argument('--send_images_to_visdom', default=True, type=str2bool, help='Send images to visdom for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
-parser.add_argument('--data_root', default=kitti_single_root_2, help='Location of kitti root directory')
+parser.add_argument('--data_root', default=KITTIroot, help='Location of kitti root directory')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -121,8 +122,8 @@ def DatasetSync(dataset='VOC',split='training'):
         args.dim, means), AnnotationTransform())
     elif dataset=='kitti':
         #DataRoot=os.path.join(args.data_root,'kitti')
-        dataset = KittiLoader(args.data_root, split=split,img_size=(384, 1280),
-                  transforms=SSDAugmentation((384,1280),means),
+        dataset = KittiLoader(args.data_root, split=split,img_size=(1280, 384),
+                  transforms=SSDAugmentation((1280, 384),means),
                   target_transform=AnnotationTransform_kitti())
 
     return dataset
@@ -235,9 +236,10 @@ def train():
             log.l.info('''
                 Timer: {:.5f} sec.\t LR: {}.\t Iter: {}.\t Loss_l: {:.5f}.\t Loss_c: {:.5f}.
                 '''.format((t1-t0),lr,iteration,loss_l.item(),loss_c.item()))
-            if args.visdom and args.send_images_to_visdom:
+            if args.visdom and args.send_images_to_visdom and (loss_l.item() + loss_c.item()) >= 60:
                 random_batch_index = np.random.randint(images.size(0))
                 viz.image(images.data[random_batch_index].cpu().numpy())
+                viz.text("Index: ", str(random_batch_index))
         if args.visdom:
             viz.line(
                 X=torch.ones((1, 3)).cpu() * iteration,
@@ -260,14 +262,14 @@ def train():
             torch.save(ssd_net.state_dict(), 'weights/ssd' + str(args.dim) + '_0712_' +
                        repr(iteration) + '.pth')
     torch.save(ssd_net.state_dict(), args.save_folder + 'ssd_' + str(args.dim) + '.pth')
-    if iteration == args.iterations:
-        epochs = range(1, len(loss_c) + 1)
-        plt.plot(epochs, loss_l, 'b--')
-        plt.plot(epochs, loss_c, 'r--')
-        plt.legend(['Location Loss', 'Confidence Loss'])
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.show()
+    # if iteration == args.iterations:
+    #     epochs = range(1, len(conf_loss) + 1)
+    #     plt.plot(epochs, loc_loss, 'b--')
+    #     plt.plot(epochs, conf_loss, 'r--')
+    #     plt.legend(['Location Loss', 'Confidence Loss'])
+    #     plt.xlabel('Epoch')
+    #     plt.ylabel('Loss')
+    #     plt.show()
 
 
 def adjust_learning_rate(optimizer, gamma, epoch, step_index, iteration, epoch_size):

@@ -23,7 +23,7 @@ kitti_single_root_2 = ddir # path to KITTI root div
 v = {
         'feature_maps' : [(48, 160), (48, 160), (24, 80), (24, 80), (12, 40), (6, 20)],
 
-        'min_dim' : [384, 1280],
+        'min_dim' : [1280, 384],
 
         'steps' : [8, 16, 32, 64, 100, 300],
 
@@ -42,7 +42,7 @@ v = {
 
         'clip' : True,
 
-        'name' : 'v0_384x1280',
+        'name' : 'v0_1280x384',
 }
 # aspect_ratios: 1.0
 # aspect_ratios: 2.0

@@ -359,7 +359,7 @@ def build_ssd(phase, size=384, num_classes=11):
         print("Error: Phase not recognized")
         return
     if size != 384:
-        print("Error: Only supports SSD384x1280.")
+        print("Error: Only supports SSD1280x384.")
         return
 
     return SSD(phase, *multibox(vgg(3), add_extras(), mbox, num_classes), num_classes)

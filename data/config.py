@@ -3,7 +3,7 @@ import os.path
 
 # gets home dir cross platform
 home = os.path.expanduser("~")
-ddir = os.path.join(home,"data\\KITTI\\")
+ddir = os.path.join(home,"data/KITTI/")
 
 KITTIroot = ddir # path to KITTI root div
 

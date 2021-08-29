@@ -70,7 +70,7 @@ class AnnotationTransform_kitti(object):
 
 class KittiLoader(data.Dataset):
     def __init__(self, root, split="training",
-                 img_size= (384, 1280)
+                 img_size=(384, 1280)
                  , transforms=None,target_transform=None):
         self.root = root
         self.split = split

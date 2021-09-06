@@ -33,10 +33,9 @@ parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Ja
 parser.add_argument('--batch_size', default=1, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--iterations', default=1000000000, type=int, help='Number of training iterations')
-parser.add_argument('--epochs', default=10, type=int, help='Number of training iterations')
+parser.add_argument('--iterations', default=100000000, type=int, help='Number of training iterations')
 parser.add_argument('--cuda', default=False, type=str2bool, help='Use cuda to train model')
-parser.add_argument('--lr', '--learning-rate', default=5e-5, type=float, help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=5e-4, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
@@ -45,7 +44,6 @@ parser.add_argument('--visdom', default=True, type=str2bool, help='Use visdom to
 parser.add_argument('--send_images_to_visdom', default=True, type=str2bool, help='Send images to visdom for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
 parser.add_argument('--data_root', default=KITTIroot, help='Location of kitti root directory')
-parser.add_argument('--print_loss', default=True, type=str2bool, help='Print iteration loss')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -65,7 +63,7 @@ elif args.dataset=='kitti':
     num_classes = 11
 accum_batch_size = 2
 iter_size = accum_batch_size / args.batch_size
-stepvalues = (935)
+stepvalues = (60000, 80000, 100000)
 start_iter = 0
 
 if args.visdom:
@@ -124,8 +122,8 @@ def DatasetSync(dataset='VOC',split='training'):
         args.dim, means), AnnotationTransform())
     elif dataset=='kitti':
         #DataRoot=os.path.join(args.data_root,'kitti')
-        dataset = KittiLoader(args.data_root, split=split,img_size=(384, 1280),
-                  transforms=SSDAugmentation((384, 1280),means),
+        dataset = KittiLoader(args.data_root, split=split,img_size=(1280, 384),
+                  transforms=SSDAugmentation((1280, 384),means),
                   target_transform=AnnotationTransform_kitti())
 
     return dataset
@@ -139,16 +137,12 @@ def train():
     epoch = 0
     log.l.info('Loading Dataset...')
 
-    #epoch_tot_loss = []
-    #epoch_loc_loss = []
-    #epoch_conf_loss = []
-
     # dataset = VOCDetection(args.voc_root, train_sets, SSDAugmentation(
     #     args.dim, means), AnnotationTransform())
     dataset=DatasetSync(dataset=args.dataset,split='training')
 
 
-    epoch_size = int(len(dataset) // args.batch_size)
+    epoch_size = len(dataset) // args.batch_size
     log.l.info('Training SSD on {}'.format(dataset.name))
     step_index = 0
     if args.visdom:
@@ -183,11 +177,11 @@ def train():
     lr=args.lr
 
     #training
-    for iteration in range(start_iter, epoch_size * args.epochs):
+    for iteration in range(start_iter, args.iterations + 1):
         if (not batch_iterator) or (iteration % epoch_size == 0):
             # create batch iterator
             batch_iterator = iter(data_loader)
-        if (iteration % epoch_size == 0) and (iteration != 0): #iteration in stepvalues:
+        if iteration in stepvalues:
             step_index += 1
             lr=adjust_learning_rate(optimizer, args.gamma, epoch, step_index, iteration, epoch_size)
             if args.visdom:
@@ -198,17 +192,6 @@ def train():
                     win=epoch_lot,
                     update='append'
                 )
-
-            #epoch_tot_loss.append(loc_loss + conf_loss)
-            #epoch_loc_loss.append(loc_loss)
-            #epoch_conf_loss.append(conf_loss)
-
-            log.l.info("\n", "********EPOCH LOSS********")
-            log.l.info("***tot_loss: ", loc_loss + conf_loss)
-            log.l.info("***loc_loss: ", loc_loss)
-            log.l.info("***conf_loss: ", conf_loss)
-            log.l.info("**************************", "\n")
-
             # reset epoch loss counters
             loc_loss = 0
             conf_loss = 0
@@ -250,10 +233,9 @@ def train():
         loc_loss += loss_l.item() #loss_l.data[0]
         conf_loss += loss_c.item() #loss_c.data[0]
         if iteration % 1 == 0:
-            if args.print_loss:
-                log.l.info('''
-                    Timer: {:.5f} sec.\t LR: {}.\t Iter: {}.\t Loss_l: {:.5f}.\t Loss_c: {:.5f}.
-                    '''.format((t1-t0),lr,iteration,loss_l.item(),loss_c.item()))
+            log.l.info('''
+                Timer: {:.5f} sec.\t LR: {}.\t Iter: {}.\t Loss_l: {:.5f}.\t Loss_c: {:.5f}.
+                '''.format((t1-t0),lr,iteration,loss_l.item(),loss_c.item()))
             if args.visdom and args.send_images_to_visdom and (loss_l.item() + loss_c.item()) >= 60:
                 random_batch_index = np.random.randint(images.size(0))
                 viz.image(images.data[random_batch_index].cpu().numpy())
@@ -275,7 +257,7 @@ def train():
                     win=epoch_lot,
                     update=True
                 )
-        if iteration % 10000 == 0:
+        if iteration % 250 == 0:
             log.l.info('Saving state, iter: {}'.format(iteration))
             torch.save(ssd_net.state_dict(), 'weights/ssd' + str(args.dim) + '_0712_' +
                        repr(iteration) + '.pth')

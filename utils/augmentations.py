@@ -102,7 +102,7 @@ class ToPercentCoords(object):
 
 
 class Resize(object):
-    def __init__(self, size=(384, 1280)):
+    def __init__(self, size=(1280, 384)):
         self.size = size if isinstance(size,tuple) else (size,size)
 
     def __call__(self, image, boxes=None, labels=None):
@@ -397,7 +397,7 @@ class PhotometricDistort(object):
 
 
 class SSDAugmentation(object):
-    def __init__(self, size=(384, 1280), mean=(104, 117, 123)):
+    def __init__(self, size=(1280, 384), mean=(104, 117, 123)):
         self.mean = mean
         self.size = size
         self.augment = Compose([

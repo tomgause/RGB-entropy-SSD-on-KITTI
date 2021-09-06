@@ -183,7 +183,7 @@ def train():
         if (not batch_iterator) or (iteration % epoch_size == 0):
             # create batch iterator
             batch_iterator = iter(data_loader)
-        if iteration in stepvalues:
+        if (iteration % epoch_size == 0) and (iteration != 0): #iteration in stepvalues:
             step_index += 1
             lr=adjust_learning_rate(optimizer, args.gamma, epoch, step_index, iteration, epoch_size)
             if args.visdom:

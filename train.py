@@ -68,7 +68,7 @@ start_iter = 0
 
 if args.visdom:
     import visdom
-    viz = visdom.Visdom()
+    viz = visdom.Visdom(port=8100)
 
 ssd_net = build_ssd('train', args.dim, num_classes)
 net = ssd_net

@@ -44,7 +44,7 @@ parser.add_argument('--visdom', default=True, type=bool, help='Use visdom to for
 parser.add_argument('--send_images_to_visdom', default=True, type=bool, help='Send images to visdom for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
 parser.add_argument('--data_root', default=KITTIroot, type=str, help='Location of kitti root directory')
-parser.add_argument('--train_split', default=(-1, -1), type=tuple, help='Split training set using tuple, default is all')
+parser.add_argument('--train_split', nargs='+', default=[-1, -1], type=int, help='Split training set using tuple, default is all')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -126,7 +126,7 @@ def DatasetSync(dataset='VOC',split='training'):
         dataset = KittiLoader(args.data_root, split=split,img_size=(1280, 384),
                   transforms=SSDAugmentation((1280, 384),means),
                   target_transform=AnnotationTransform_kitti(),
-                  train_split=args.train_split)
+                  train_split=tuple(args.train_split))
 
     return dataset
 

@@ -41,7 +41,7 @@ parser.add_argument('--weight_decay', default=0.0005, type=float, help='Weight d
 parser.add_argument('--gamma', default=0.9, type=float, help='Gamma update for SGD')
 parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
 parser.add_argument('--visdom', default=True, type=bool, help='Use visdom to for loss visualization')
-parser.add_argument('--send_images_to_visdom', default=True, type=bool, help='Send images to visdom for loss visualization')
+parser.add_argument('--send_images_to_visdom', default=False, type=bool, help='Send images to visdom for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
 parser.add_argument('--data_root', default=KITTIroot, type=str, help='Location of kitti root directory')
 parser.add_argument('--train_split', nargs='+', default=[-1, -1], type=int, help='Split training set using tuple, default is all')
@@ -241,7 +241,6 @@ def train():
             if args.visdom and args.send_images_to_visdom and ((iteration==0) or ((loss_l.item() + loss_c.item()) >= 60)):
                 random_batch_index = np.random.randint(images.size(0))
                 viz.image(images.data[random_batch_index].cpu().numpy())
-                viz.text("Index: ", str(random_batch_index))
         if args.visdom:
             viz.line(
                 X=torch.ones((1, 3)).cpu() * iteration,
@@ -282,7 +281,7 @@ def adjust_learning_rate(optimizer, gamma, epoch, step_index, iteration, epoch_s
     if epoch < 6:
         lr = 1e-6 + (args.lr-1e-6) * iteration / (epoch_size * 5)
     else:
-        lr = args.lr * (gamma ** (step_index))
+        lr = args.lr * (gamma ** (step_index)) ** 0.5
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     return lr

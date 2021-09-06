@@ -238,7 +238,7 @@ def train():
             log.l.info('''
                 Timer: {:.5f} sec.\t LR: {}.\t Iter: {}.\t Loss_l: {:.5f}.\t Loss_c: {:.5f}.
                 '''.format((t1-t0),lr,iteration,loss_l.item(),loss_c.item()))
-            if args.visdom and args.send_images_to_visdom and ((iteration==0) or (loss_l.item() + loss_c.item()) >= 60):
+            if args.visdom and args.send_images_to_visdom and ((iteration==0) or ((loss_l.item() + loss_c.item()) >= 60)):
                 random_batch_index = np.random.randint(images.size(0))
                 viz.image(images.data[random_batch_index].cpu().numpy())
                 viz.text("Index: ", str(random_batch_index))

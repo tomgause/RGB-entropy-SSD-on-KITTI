@@ -40,10 +40,11 @@ parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
 parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
-parser.add_argument('--visdom', default=True, type=str2bool, help='Use visdom to for loss visualization')
-parser.add_argument('--send_images_to_visdom', default=True, type=str2bool, help='Send images to visdom for loss visualization')
+parser.add_argument('--visdom', default=True, type=bool, help='Use visdom to for loss visualization')
+parser.add_argument('--send_images_to_visdom', default=True, type=bool, help='Send images to visdom for loss visualization')
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
-parser.add_argument('--data_root', default=KITTIroot, help='Location of kitti root directory')
+parser.add_argument('--data_root', default=KITTIroot, type=str, help='Location of kitti root directory')
+parser.add_argument('--train_split', default=(-1, -1), type=tuple, help='Split training set using tuple, default is all')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -124,7 +125,8 @@ def DatasetSync(dataset='VOC',split='training'):
         #DataRoot=os.path.join(args.data_root,'kitti')
         dataset = KittiLoader(args.data_root, split=split,img_size=(1280, 384),
                   transforms=SSDAugmentation((1280, 384),means),
-                  target_transform=AnnotationTransform_kitti())
+                  target_transform=AnnotationTransform_kitti(),
+                  train_split=args.train_split)
 
     return dataset
 

@@ -71,10 +71,11 @@ class AnnotationTransform_kitti(object):
 class KittiLoader(data.Dataset):
     def __init__(self, root, split="training",
                  img_size= (384, 1280)
-                 , transforms=None,target_transform=None):
+                 , transforms=None,target_transform=None, train_split=(-1,-1)):
         self.root = root
         self.split = split
         self.target_transform = target_transform
+        self.train_split = train_split
         self.n_classes = 11
         self.img_size = img_size if isinstance(img_size, tuple) else (img_size, img_size)
         self.mean = np.array([123,117,104])
@@ -83,15 +84,22 @@ class KittiLoader(data.Dataset):
         self.transforms = transforms
         self.name='kitti'
 
+
         print("Root: ",root)
 
         for split in ["training", "testing"]:
             file_list = glob(os.path.join(root, split, 'image_2', '*.png'))
-            self.files[split] = file_list
+            if train_split[0]==-1:
+                self.files[split] = file_list
+            else:
+                self.files[split] = file_list[train_split[0]:train_split[1]]
 
             if not split=='testing':
                 label_list=glob(os.path.join(root, split, 'label_2', '*.txt'))
-                self.labels[split] = label_list
+                if train_split[0]==-1:
+                    self.labels[split] = label_list
+                else:
+                    self.labels[split] = label_list[train_split[0]:train_split[1]]
 
 
     def __len__(self):

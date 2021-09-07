@@ -10,11 +10,11 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from torch.autograd import Variable
-from data import VOCroot
-from data import VOC_CLASSES as labelmap
+from data import KITTIroot
+from data import KITTI_CLASSES as labelmap
 import torch.utils.data as data
 
-from data import AnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
+from data import AnnotationTransform_kitti, KITTILoader, VOCDetection, BaseTransform
 from ssd import build_ssd
 from log import log
 import sys
@@ -34,7 +34,7 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
-parser.add_argument('--trained_model', default='weights/ssd512_mAP_77.43_v2.pth',
+parser.add_argument('--trained_model', default='weights/ssd384_0712.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='File path to save results')
@@ -42,9 +42,9 @@ parser.add_argument('--confidence_threshold', default=0.01, type=float,
                     help='Detection confidence threshold')
 parser.add_argument('--top_k', default=5, type=int,
                     help='Further restrict the number of predictions to parse')
-parser.add_argument('--cuda', default=False, type=str2bool,
+parser.add_argument('--cuda', default=True, type=str2bool,
                     help='Use cuda to train model')
-parser.add_argument('--voc_root', default=VOCroot, help='Location of VOC root directory')
+parser.add_argument('--voc_root', default=KITTIroot, help='Location of VOC root directory')
 
 args = parser.parse_args()
 
@@ -56,13 +56,16 @@ if args.cuda and torch.cuda.is_available():
 else:
     torch.set_default_tensor_type('torch.FloatTensor')
 
-annopath = os.path.join(args.voc_root, 'VOC2007', 'Annotations', '%s.xml')
-imgpath = os.path.join(args.voc_root, 'VOC2007', 'JPEGImages', '%s.jpg')
-imgsetpath = os.path.join(args.voc_root, 'VOC2007', 'ImageSets', 'Main', '{:s}.txt')
-YEAR = '2007'
-devkit_path = VOCroot + 'VOC' + YEAR
-dataset_mean = (104, 117, 123)
-set_type = 'test'
+# annopath = os.path.join(args.voc_root, 'VOC2007', 'Annotations', '%s.xml')
+# imgpath = os.path.join(args.voc_root, 'VOC2007', 'JPEGImages', '%s.jpg')
+# imgsetpath = os.path.join(args.voc_root, 'VOC2007', 'ImageSets', 'Main', '{:s}.txt')
+# YEAR = '2007'
+# devkit_path = VOCroot + 'VOC' + YEAR
+# dataset_mean = (104, 117, 123)
+# set_type = 'test'
+
+anno
+dataset_mean = (123, 117, 104)
 
 class Timer(object):
     """A simple timer."""
@@ -408,17 +411,21 @@ def evaluate_detections(box_list, output_dir, dataset):
 
 if __name__ == '__main__':
     # load net
-    num_classes = len(VOC_CLASSES) + 1 # +1 background
-    net = build_ssd('test', 512, num_classes) # initialize SSD
+    num_classes = 11 # background
+    net = build_ssd('test', 384, num_classes) # initialize SSD
     net.load_state_dict(torch.load(args.trained_model))
     net.eval()
     log.l.info('Finished loading model!')
     # load data
-    dataset = VOCDetection(args.voc_root, [('2007', set_type)], BaseTransform(512, dataset_mean), AnnotationTransform())
+    #dataset = VOCDetection(args.voc_root, [('2007', set_type)], BaseTransform(512, dataset_mean), AnnotationTransform())
+    dataset = KittiLoader(KittiLoader(args.data_root, split=split,img_size=(1280, 384),
+                  transforms=SSDAugmentation((1280, 384), dataset_mean),
+                  target_transform=AnnotationTransform_kitti(),
+                  train_split=tuple(args.train_split)))
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True
     # evaluation
     test_net(args.save_folder, net, args.cuda, dataset,
-             BaseTransform(net.size, dataset_mean), args.top_k, 512,
+             BaseTransform(net.size, dataset_mean), args.top_k, 384,
              thresh=args.confidence_threshold)

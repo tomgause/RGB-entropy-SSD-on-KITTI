@@ -182,7 +182,7 @@ class SSD(nn.Module):
         if self.phase == "test":
 
             print(conf.size(0))
-            print(conf.view(-1, self.num_sizes).size())
+            print(conf.view(-1, self.num_classes).size())
             print(conf.view(conf.size(0), -1, self.num_classes))
 
             output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,

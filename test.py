@@ -38,7 +38,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
     num_images = len(testset)
     for i in range(num_images):
         log.l.info('Testing image {:d}/{:d}....'.format(i+1, num_images))
-        img = testset.pull_image(i)
+        img = testset[i]
         img_id, annotation = testset.pull_anno(i)
         x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
         x = Variable(x.unsqueeze(0))
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     #testset = VOCDetection(args.voc_root, [('2007', 'test')], None, AnnotationTransform())
     testset = KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
                   transforms=SSDAugmentation((1280, 384), (123, 117, 104)),
-                  target_transform=AnnotationTransform_kitti(),
+                  target_transform=AnnotationTransform_kitti,
                   train_split=(0,100))
     if args.cuda:
         net = net.cuda()

@@ -158,49 +158,6 @@ class KittiLoader(data.Dataset):
         return torch.from_numpy(img).permute(2, 0, 1), target, height, width
         # return torch.from_numpy(img), target, height, width
 
-    def pull_image(self, index):
-        '''Returns the original image object at index in PIL form
-
-        Note: not using self.__getitem__(), as any transformations passed in
-        could mess up this functionality.
-
-        Argument:
-            index (int): index of img to show
-        Return:
-            PIL img
-        '''
-        img_id = self.ids[index]
-        return cv2.imread(self._imgpath % img_id, cv2.IMREAD_COLOR)
-
-    def pull_anno(self, index):
-        '''Returns the original annotation of image at index
-
-        Note: not using self.__getitem__(), as any transformations passed in
-        could mess up this functionality.
-
-        Argument:
-            index (int): index of img to get annotation of
-        Return:
-            list:  [img_id, [(label, bbox coords),...]]
-                eg: ('001718', [('dog', (96, 13, 438, 332))])
-        '''
-        img_id = self.ids[index]
-        anno = ET.parse(self._annopath % img_id).getroot()
-        gt = self.target_transform(anno, 1, 1)
-        return img_id[1], gt
-
-    def pull_tensor(self, index):
-        '''Returns the original image at an index in tensor form
-
-        Note: not using self.__getitem__(), as any transformations passed in
-        could mess up this functionality.
-
-        Argument:
-            index (int): index of img to show
-        Return:
-            tensorized version of img, squeezed
-        '''
-        return torch.Tensor(self.pull_image(index)).unsqueeze_(0)
 
     def detection_collate(batch):
         """Custom collate fn for dealing with batches of images that have a different

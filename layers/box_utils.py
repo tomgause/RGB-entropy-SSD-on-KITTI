@@ -151,6 +151,7 @@ def decode(loc, priors, variances):
     # TESTING: DELETE
     print(priors[:, :2].size())
     print(loc[:, :2].size())
+    print(loc[:, 2:].size())
     print(priors[:, 2:].size())
 
     boxes = torch.cat((

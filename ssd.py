@@ -180,6 +180,7 @@ class SSD(nn.Module):
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
 
+        print(loc.size())
         print(conf.size())
 
         if self.phase == "test":

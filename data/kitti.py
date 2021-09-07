@@ -109,7 +109,7 @@ class KittiLoader(data.Dataset):
             id_list = []
             p = pathlib.Path(root, split, 'label_2')
             for x in p.glob('*.txt'):
-                id_list.append(x)
+                id_list.append(str(x))
             if train_split[0] == -1:
                 self.ids[split] = id_list
             else:

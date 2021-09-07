@@ -22,7 +22,7 @@ parser.add_argument('--save_folder', default='eval/', type=str,
                     help='Dir to save results')
 parser.add_argument('--visual_threshold', default=0.5, type=float,
                     help='Final confidence threshold')
-parser.add_argument('--cuda', default=True, type=bool,
+parser.add_argument('--cuda', default=False, type=bool,
                     help='Use cuda to train model')
 parser.add_argument('--data_root', default=KITTIroot, help='Location of data root directory')
 

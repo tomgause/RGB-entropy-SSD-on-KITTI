@@ -185,7 +185,7 @@ class SSD(nn.Module):
 
         if self.phase == "test":
             output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,
-                loc.view(loc.size(0), -1, 4),                   # loc preds
+                loc.view(loc.size(0), -1, 2),                   # loc preds
                 self.softmax(conf.view(-1, self.num_classes)),  # conf preds
                 self.priors.type(type(x.data))                  # default boxes
             )

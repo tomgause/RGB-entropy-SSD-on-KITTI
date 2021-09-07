@@ -182,6 +182,7 @@ class SSD(nn.Module):
 
         print(loc.size())
         print(conf.size())
+        print(self.priors.type(type(x.data)).size())
 
         if self.phase == "test":
             output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,

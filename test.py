@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 from data import KITTIroot, KITTI_CLASSES as labelmap
 from PIL import Image
-from data import AnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
+from data import AnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES, KittiLoader
 import torch.utils.data as data
 from ssd import build_ssd
 from log import log
@@ -57,7 +57,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         pred_num = 0
         for i in range(detections.size(1)):
             j = 0
-            while detections[0, i, j, 0] >= visual_threshold:
+            while detections[0, i, j, 0] >= args.visual_threshold:
                 if pred_num == 0:
                     with open(filename, mode='a') as f:
                         f.write('PREDICTIONS: '+'\n')
@@ -81,10 +81,10 @@ if __name__ == '__main__':
     log.l.info('Finished loading model!')
     # load data
     #testset = VOCDetection(args.voc_root, [('2007', 'test')], None, AnnotationTransform())
-    testset = KittiLoader(KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
-                  transforms=SSDAugmentation((1280, 384), dataset_mean),
+    testset = KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
+                  transforms=SSDAugmentation((1280, 384), (123, 117, 104)),
                   target_transform=AnnotationTransform_kitti(),
-                  train_split=tuple(args.train_split)))
+                  train_split=(0,100))
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True

@@ -152,31 +152,10 @@ class KittiLoader(data.Dataset):
             return img
 
     def pull_label(self, index):
-        return self.labels[index]
+        return self.labels['training'][index]
 
     def pull_id(self, index):
-        return self.ids[index]
-
-    def pull_item(self, index):
-        img_id = self.ids[index]
-
-        target = ET.parse(self._annopath % img_id).getroot()
-        img = cv2.imread(self._imgpath % img_id)
-        height, width, channels = img.shape
-
-        if self.target_transform is not None:
-            target = self.target_transform(target, width, height)
-
-        if self.transform is not None:
-            target = np.array(target)
-            img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
-            # to rgb
-            img = img[:, :, (2, 1, 0)]
-            # img = img.transpose(2, 0, 1)
-            target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
-        return torch.from_numpy(img).permute(2, 0, 1), target, height, width
-        # return torch.from_numpy(img), target, height, width
-
+        return self.ids['training'][index]
 
     def detection_collate(batch):
         """Custom collate fn for dealing with batches of images that have a different

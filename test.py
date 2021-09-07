@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from torch.autograd import Variable
-from data import VOCroot, KITTIroot, VOC_CLASSES as labelmap
+from data import KITTIroot, KITTI_CLASSES as labelmap
 from PIL import Image
 from data import AnnotationTransform, VOCDetection, BaseTransform, VOC_CLASSES
 import torch.utils.data as data

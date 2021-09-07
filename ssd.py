@@ -183,7 +183,7 @@ class SSD(nn.Module):
 
             print(conf.size(0))
             print(conf.view(-1, self.num_classes).size())
-            print(conf.view(conf.size(0), -1, self.num_classes))
+            print(conf.view(conf.size(0), -1, self.num_classes).size())
 
             output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,
                 loc.view(loc.size(0), -1, 4),

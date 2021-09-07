@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # load data
     #testset = VOCDetection(args.voc_root, [('2007', 'test')], None, AnnotationTransform())
     testset = KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
-                  transforms=SSDAugmentation((1280, 384), (123, 117, 104)),
+                  transforms=None,
                   target_transform=AnnotationTransform_kitti,
                   train_split=(0,100))
     if args.cuda:

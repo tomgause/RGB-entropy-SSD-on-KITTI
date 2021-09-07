@@ -12,6 +12,7 @@ import re
 import random
 import cv2
 from torch.utils import data
+import pathlib
 
 KITTI_CLASSES= [
     'BG','Car','Van','Truck',
@@ -81,6 +82,7 @@ class KittiLoader(data.Dataset):
         self.mean = np.array([123,117,104])
         self.files = collections.defaultdict(list)
         self.labels = collections.defaultdict(list)
+        self.ids = collections.defaultdict(list)
         self.transforms = transforms
         self.name='kitti'
 
@@ -88,19 +90,30 @@ class KittiLoader(data.Dataset):
         print("Root: ",root)
 
         for split in ["training", "testing"]:
+
+            # Create list of image files
             file_list = glob(os.path.join(root, split, 'image_2', '*.png'))
             if train_split[0]==-1:
                 self.files[split] = file_list
             else:
                 self.files[split] = file_list[train_split[0]:train_split[1]]
 
-            if not split=='testing':
-                label_list=glob(os.path.join(root, split, 'label_2', '*.txt'))
-                if train_split[0]==-1:
-                    self.labels[split] = label_list
-                else:
-                    self.labels[split] = label_list[train_split[0]:train_split[1]]
+            # Create list of label files
+            label_list = glob(os.path.join(root, split, 'label_2', '*.txt'))
+            if train_split[0]==-1:
+                self.labels[split] = label_list
+            else:
+                self.labels[split] = label_list[train_split[0]:train_split[1]]
 
+            # Create list of image ids
+            id_list = []
+            p = pathlib.Path(root, split, 'label_2')
+            for x in p.glob('*.txt'):
+                id_list.append(x)
+            if train_split[0] == -1:
+                self.ids[split] = id_list
+            else:
+                self.ids[split] = id_list[train_split[0]:train_split[1]]
 
     def __len__(self):
         return len(self.files[self.split])
@@ -137,6 +150,12 @@ class KittiLoader(data.Dataset):
             return torch.from_numpy(img).permute(2, 0, 1), target, height, width
         else:
             return img
+
+    def pull_label(self, index):
+        return self.labels[index]
+
+    def pull_id(self, index):
+        return self.ids[index]
 
     def pull_item(self, index):
         img_id = self.ids[index]

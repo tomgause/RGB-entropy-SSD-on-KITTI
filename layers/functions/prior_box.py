@@ -87,6 +87,7 @@ class PriorBox(object):
 
         # back to torch land
         output = torch.Tensor(mean).view(-1, 4)
+        print(output.size())
         if self.clip:
             output.clamp_(max=1, min=0)
         return output

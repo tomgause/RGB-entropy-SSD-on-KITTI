@@ -138,6 +138,8 @@ class KittiLoader(data.Dataset):
             lbl_lines = open(lbl_path, 'r').readlines()
             if self.target_transform is not None:
                 print(lbl_lines)
+                print(width)
+                print(height)
                 target = self.target_transform(lbl_lines, width, height)
 
         # if self.is_transform:

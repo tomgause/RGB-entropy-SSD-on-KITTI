@@ -44,6 +44,8 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
         x = Variable(x.unsqueeze(0))
 
+        print(x.size())
+
         with open(filename, mode='a') as f:
             f.write('\nGROUND TRUTH FOR: '+img_id+'\n')
             for box in annotation:

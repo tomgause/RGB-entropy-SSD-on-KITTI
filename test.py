@@ -85,7 +85,7 @@ if __name__ == '__main__':
     testset = KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
                   transforms=None,
                   target_transform=AnnotationTransform_kitti,
-                  train_split=(0,1))
+                  train_split=(0,4))
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True

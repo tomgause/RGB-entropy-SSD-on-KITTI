@@ -133,8 +133,6 @@ class KittiLoader(data.Dataset):
             if self.target_transform is not None:
                 target = self.target_transform(lbl_lines, width, height)
         else:
-            print(index)
-            print(self.labels[self.split])
             lbl_path = self.labels[self.split][index]
             lbl_lines = open(lbl_path, 'r').readlines()
             if self.target_transform is not None:

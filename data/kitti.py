@@ -133,7 +133,11 @@ class KittiLoader(data.Dataset):
             if self.target_transform is not None:
                 target = self.target_transform(lbl_lines, width, height)
         else:
-            lbl = None
+            # originally, this was lbl=None. I'm guessing this was the remnant of a dysfunctional program...
+            lbl_path = self.labels[self.split][index]
+            lbl_lines = open(lbl_path, 'r').readlines()
+            if self.target_transform is not None:
+                target = self.target_transform(lbl_lines, width, height)
 
         # if self.is_transform:
         #     img, lbl = self.transform(img, lbl)

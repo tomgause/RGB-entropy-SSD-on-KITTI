@@ -38,8 +38,6 @@ class SSD(nn.Module):
         with torch.no_grad():
             self.priors = self.priorbox.forward()
 
-        print(self.priors.size())
-
         # SSD network
         self.vgg = nn.ModuleList(base)
         self.extras = nn.ModuleList(extras)
@@ -174,11 +172,6 @@ class SSD(nn.Module):
             x = self.extras[k](x)
         sources.append(x)
 
-        print(len(sources))
-        for i in sources:
-            print(i.size())
-        print(sources[0].size())
-
         # apply multibox head to source layers         ????????????????????????????????????????????????????????????
         for (x, l, c) in zip(sources, self.loc, self.conf):
             loc.append(l(x).permute(0, 2, 3, 1).contiguous())
@@ -186,10 +179,6 @@ class SSD(nn.Module):
 
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
-
-        print(loc.size())
-        print(conf.size())
-        print(self.priors.size())
 
         if self.phase == "test":
             output = self.detect.apply(self.num_classes, 0, 200, 0.01, 0.45,

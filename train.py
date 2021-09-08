@@ -45,6 +45,7 @@ parser.add_argument('--send_images_to_visdom', default=False, type=bool, help='S
 parser.add_argument('--save_folder', default='weights/', help='Location to save checkpoint models')
 parser.add_argument('--data_root', default=KITTIroot, type=str, help='Location of kitti root directory')
 parser.add_argument('--train_split', nargs='+', default=[-1, -1], type=int, help='Split training set using tuple, default is all')
+parser.add_argument('--start_iter', default=0, type=int, help='Resume training at this iter')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():
@@ -65,7 +66,7 @@ elif args.dataset=='kitti':
 accum_batch_size = 2
 iter_size = accum_batch_size / args.batch_size
 stepvalues = (60000, 80000, 100000)
-start_iter = 0
+start_iter = args.start_iter
 
 if args.visdom:
     import visdom

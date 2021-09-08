@@ -38,9 +38,8 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
     num_images = len(testset)
     for i in range(num_images):
         log.l.info('Testing image {:d}/{:d}....'.format(i+1, num_images))
-        img = testset[i]
+        img, annotation = testset[i]
         img_id = testset.pull_id(i)
-        annotation = testset.pull_label(i)
         x = torch.from_numpy(transform(img)[0]).permute(2, 0, 1)
         x = Variable(x.unsqueeze(0))
 

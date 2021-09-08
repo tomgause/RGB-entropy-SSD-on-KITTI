@@ -133,11 +133,11 @@ class KittiLoader(data.Dataset):
             if self.target_transform is not None:
                 target = self.target_transform(lbl_lines, width, height)
         else:
-            # originally, this was lbl=None. I'm guessing this was the remnant of a dysfunctional program...
             lbl_path = self.labels[self.split][index]
             lbl_lines = open(lbl_path, 'r').readlines()
             if self.target_transform is not None:
                 target = self.target_transform(lbl_lines, width, height)
+            lbl = None
 
         # if self.is_transform:
         #     img, lbl = self.transform(img, lbl)
@@ -153,7 +153,7 @@ class KittiLoader(data.Dataset):
             #return img, lbl
             return torch.from_numpy(img).permute(2, 0, 1), target, height, width
         else:
-            return img
+            return img, target
 
     def pull_label(self, index):
         return self.labels['training'][index]

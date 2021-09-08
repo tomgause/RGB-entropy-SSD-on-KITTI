@@ -258,7 +258,7 @@ def train():
                     win=epoch_lot,
                     update=True
                 )
-        if iteration % 250 == 0:
+        if iteration % 250 == 0 or iteration == 0:
             log.l.info('Saving state, iter: {}'.format(iteration))
             torch.save(ssd_net.state_dict(), 'weights/ssd' + str(args.dim) + '_0712_' +
                        repr(iteration) + '.pth')

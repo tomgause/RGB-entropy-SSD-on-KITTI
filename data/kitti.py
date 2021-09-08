@@ -92,11 +92,11 @@ class KittiLoader(data.Dataset):
         for split in ["training", "testing"]:
 
             # Create list of image files
-            file_list = glob(os.path.join(root, split, 'image_2', '*.png'))
+            file_list = glob(os.path.join(root, "training", 'image_2', '*.png'))
             if train_split[0]==-1:
                 self.files[split] = file_list
             else:
-                self.files[split] = file_list[train_split[0]:train_split[1]]
+                self.files[split] = file_list[train_split[0]+1:train_split[1]+1]
 
             # Create list of label files
             label_list = glob(os.path.join(root, "training", 'label_2', '*.txt'))

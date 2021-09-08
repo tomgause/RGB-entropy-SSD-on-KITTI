@@ -272,8 +272,6 @@ def vgg(i):
     # ent=entropy()
     layers = [
 
-        # TODO: Adjust network architecture (obviously)
-
         # Conv1_1, Conv1_2, Pool1
         nn.Conv2d(in_channels, 64, kernel_size=3, padding=1), nn.BatchNorm2d(64), nn.ReLU(),
         nn.Conv2d(64, 64, kernel_size=3, padding=1), nn.BatchNorm2d(64), nn.ReLU(),
@@ -356,7 +354,7 @@ def multibox(vgg, extra_layers, cfg, num_classes):
     return vgg, extra_layers, (loc_layers, conf_layers)
 
 # TODO: determine ideal # of boxes for kitti
-mbox = [6, 6, 6, 6, 6, 6] # of boxes per feature map location
+mbox = [4, 6, 6, 6, 6, 4] # of boxes per feature map location
 
 def build_ssd(phase, size=384, num_classes=11):
     #print("Building SSD...")

@@ -105,6 +105,8 @@ class KittiLoader(data.Dataset):
             else:
                 self.labels[split] = label_list[train_split[0]:train_split[1]]
 
+            print(self.labels)
+
             # Create list of image ids
             id_list = []
             p = pathlib.Path(root, split, 'label_2')

@@ -38,6 +38,8 @@ class SSD(nn.Module):
         with torch.no_grad():
             self.priors = self.priorbox.forward()
 
+        print(self.priors.size())
+
         # SSD network
         self.vgg = nn.ModuleList(base)
         self.extras = nn.ModuleList(extras)

@@ -96,7 +96,7 @@ class KittiLoader(data.Dataset):
             if train_split[0]==-1:
                 self.files[split] = file_list
             else:
-                self.files[split] = file_list[train_split[0]+1:train_split[1]+1]
+                self.files[split] = file_list[train_split[0]:train_split[1]]
 
             # Create list of label files
             label_list = glob(os.path.join(root, "training", 'label_2', '*.txt'))
@@ -104,7 +104,7 @@ class KittiLoader(data.Dataset):
                 self.labels[split] = label_list
             else:
                 # +1 placeholder, turns out test set doesn't have normal labels >..a.sd.
-                self.labels[split] = label_list[train_split[0]+1:train_split[1]+1]
+                self.labels[split] = label_list[train_split[0]:train_split[1]]
 
             # Create list of image ids
             id_list = []

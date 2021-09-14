@@ -16,7 +16,7 @@ from log import log
 from utils.augmentations import SSDAugmentation
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
-parser.add_argument('--trained_model', default='weights/ssd384_0712_0.pth',
+parser.add_argument('--trained_model', default='weights/ssd384_0712_45000.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='Dir to save results')
@@ -25,6 +25,7 @@ parser.add_argument('--visual_threshold', default=0.5, type=float,
 parser.add_argument('--cuda', default=False, type=bool,
                     help='Use cuda to train model')
 parser.add_argument('--data_root', default=KITTIroot, help='Location of data root directory')
+parser.add_argument('--test_split', nargs='+', default=[0, 10], type=int)
 
 args = parser.parse_args()
 
@@ -85,7 +86,7 @@ if __name__ == '__main__':
     testset = KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
                   transforms=None,
                   target_transform=AnnotationTransform_kitti(levels=['easy', 'medium']),
-                  train_split=(0,1))
+                  train_split=(args.test_split[0]+6400,args.test_split[1]+6400))
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True

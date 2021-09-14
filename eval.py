@@ -34,7 +34,7 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
-parser.add_argument('--trained_model', default='weights/ssd384_0712.pth',
+parser.add_argument('--trained_model', default='weights/ssd384_45500.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='File path to save results')
@@ -44,7 +44,8 @@ parser.add_argument('--top_k', default=5, type=int,
                     help='Further restrict the number of predictions to parse')
 parser.add_argument('--cuda', default=True, type=str2bool,
                     help='Use cuda to train model')
-parser.add_argument('--voc_root', default=KITTIroot, help='Location of VOC root directory')
+parser.add_argument('--kitti_root', default=KITTIroot, help='Location of KITTI root directory')
+parser.add_argument('--train_split', default=(6400, 7200), help='Evaluation split')
 
 args = parser.parse_args()
 
@@ -124,20 +125,20 @@ def get_output_dir(name, phase):
     return filedir
 
 
-def get_voc_results_file_template(image_set, cls):
-    # VOCdevkit/VOC2007/results/det_test_aeroplane.txt
+def get_KITTI_results_file_template(image_set, cls):
+    # KITTI/results/det_test_aeroplane.txt
     filename = 'det_' + image_set + '_%s.txt' % (cls)
-    filedir = os.path.join(devkit_path, 'results')
+    filedir = os.path.join(KITTIroot, 'results')
     if not os.path.exists(filedir):
         os.makedirs(filedir)
     path = os.path.join(filedir, filename)
     return path
 
 
-def write_voc_results_file(all_boxes, dataset):
+def write_KITTI_results_file(all_boxes, dataset):
     for cls_ind, cls in enumerate(labelmap):
-        log.l.info('Writing {:s} VOC results file'.format(cls))
-        filename = get_voc_results_file_template(set_type, cls)
+        log.l.info('Writing {:s} KITTI results file'.format(cls))
+        filename = get_KITTI_results_file_template(set_type, cls)
         with open(filename, 'wt') as f:
             for im_ind, index in enumerate(dataset.ids):
                 dets = all_boxes[cls_ind+1][im_ind]
@@ -160,8 +161,8 @@ def do_python_eval(output_dir='output', use_07=True):
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
     for i, cls in enumerate(labelmap):
-        filename = get_voc_results_file_template(set_type, cls)
-        rec, prec, ap = voc_eval(
+        filename = get_KITTI_results_file_template(set_type, cls)
+        rec, prec, ap = KITTI_eval(
            filename, annopath, imgsetpath.format(set_type), cls, cachedir,
            ovthresh=0.5, use_07_metric=use_07_metric)
         aps += [ap]
@@ -216,7 +217,7 @@ def voc_ap(rec, prec, use_07_metric=True):
     return ap
 
 
-def voc_eval(detpath,
+def KITTI_eval(detpath,
              annopath,
              imagesetfile,
              classname,
@@ -364,7 +365,7 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
 
     # timers
     _t = {'im_detect': Timer(), 'misc': Timer()}
-    output_dir = get_output_dir('ssd512_120000', set_type)
+    output_dir = get_output_dir('ssd384_45500', set_type)
     det_file = os.path.join(output_dir, 'detections.pkl')
 
     for i in range(num_images):

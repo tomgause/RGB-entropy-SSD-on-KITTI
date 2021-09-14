@@ -16,7 +16,7 @@ from log import log
 from utils.augmentations import SSDAugmentation
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
-parser.add_argument('--trained_model', default='weights/ssd384_0712_45000.pth',
+parser.add_argument('--trained_model', default='weights/ssd384_0712_0.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='Dir to save results')

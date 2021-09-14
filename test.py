@@ -25,7 +25,7 @@ parser.add_argument('--visual_threshold', default=0.5, type=float,
 parser.add_argument('--cuda', default=False, type=bool,
                     help='Use cuda to train model')
 parser.add_argument('--data_root', default=KITTIroot, help='Location of data root directory')
-parser.add_argument('--test_split', nargs='+', default=[0, 10], type=int)
+parser.add_argument('--test_split', nargs='+', default=[0, 10], type=int, help='Range of images to test, default 0 10')
 
 args = parser.parse_args()
 

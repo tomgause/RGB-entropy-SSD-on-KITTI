@@ -57,8 +57,7 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         scale = torch.Tensor([img.shape[1], img.shape[0],
                              img.shape[1], img.shape[0]])
         pred_num = 0
-        # skip j=0, background class
-        for i in range(1, detections.size(1)):
+        for i in range(0, detections.size(1)):
             j = 0
             while detections[0, i, j, 0] >= args.visual_threshold:
                 if pred_num == 0:
@@ -87,7 +86,7 @@ if __name__ == '__main__':
     testset = KittiLoader(args.data_root, split="testing" ,img_size=(1280, 384),
                   transforms=None,
                   target_transform=AnnotationTransform_kitti(levels=['easy', 'medium']),
-                  train_split=(args.test_split[0]+6400,args.test_split[1]+6400))
+                  train_split=(args.test_split[0]+6500,args.test_split[1]+6500))
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True

@@ -57,7 +57,8 @@ def test_net(save_folder, net, cuda, testset, transform, thresh):
         scale = torch.Tensor([img.shape[1], img.shape[0],
                              img.shape[1], img.shape[0]])
         pred_num = 0
-        for i in range(detections.size(1)):
+        # skip j=0, background class
+        for i in range(1, detections.size(1)):
             j = 0
             while detections[0, i, j, 0] >= args.visual_threshold:
                 if pred_num == 0:

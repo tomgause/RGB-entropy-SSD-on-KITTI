@@ -46,6 +46,7 @@ parser.add_argument('--save_folder', default='weights/', help='Location to save 
 parser.add_argument('--data_root', default=KITTIroot, type=str, help='Location of kitti root directory')
 parser.add_argument('--train_split', nargs='+', default=[-1, -1], type=int, help='Split training set using tuple, default is all')
 parser.add_argument('--start_iter', default=0, type=int, help='Resume training at this iter')
+parser.add_argument('--entropy', default=False, type=bool, help='Use entropy in deep learning, default False')
 args = parser.parse_args()
 
 if args.cuda and torch.cuda.is_available():

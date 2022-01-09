@@ -59,13 +59,13 @@ else:
 
 # annopath = os.path.join(args.voc_root, 'VOC2007', 'Annotations', '%s.xml')
 # imgpath = os.path.join(args.voc_root, 'VOC2007', 'JPEGImages', '%s.jpg')
-# imgsetpath = os.path.join(args.voc_root, 'VOC2007', 'ImageSets', 'Main', '{:s}.txt')
+imgsetpath = os.path.join(args.kitti_root, 'Imagesets', 'ImageSets', 'smalltest.txt')
 # YEAR = '2007'
 # devkit_path = VOCroot + 'VOC' + YEAR
 # dataset_mean = (104, 117, 123)
 # set_type = 'test'
 
-anno
+# nno
 dataset_mean = (123, 117, 104)
 
 class Timer(object):
@@ -152,7 +152,7 @@ def write_KITTI_results_file(all_boxes, dataset):
                                    dets[k, 2] + 1, dets[k, 3] + 1))
 
 
-def do_python_eval(output_dir='output', use_07=True):
+def do_python_eval(output_dir='output', dataset, use_07=True):
     cachedir = os.path.join(devkit_path, 'annotations_cache')
     aps = []
     # The PASCAL VOC metric changed in 2010
@@ -163,7 +163,7 @@ def do_python_eval(output_dir='output', use_07=True):
     for i, cls in enumerate(labelmap):
         filename = get_KITTI_results_file_template(set_type, cls)
         rec, prec, ap = KITTI_eval(
-           filename, annopath, imgsetpath.format(set_type), cls, cachedir,
+           filename, dataset, cls, cachedir,
            ovthresh=0.5, use_07_metric=use_07_metric)
         aps += [ap]
         log.l.info('AP for {} = {:.4f}'.format(cls, ap))
@@ -218,13 +218,12 @@ def voc_ap(rec, prec, use_07_metric=True):
 
 
 def KITTI_eval(detpath,
-             annopath,
-             imagesetfile,
+             dataset,
              classname,
              cachedir,
              ovthresh=0.5,
              use_07_metric=True):
-    """rec, prec, ap = voc_eval(detpath,
+    """rec, prec, ap = KITTI_eval(detpath,
                            annopath,
                            imagesetfile,
                            classname,
@@ -250,6 +249,7 @@ cachedir: Directory for caching the annotations
     if not os.path.isdir(cachedir):
         os.mkdir(cachedir)
     cachefile = os.path.join(cachedir, 'annots.pkl')
+
     # read list of images
     with open(imagesetfile, 'r') as f:
         lines = f.readlines()
@@ -283,6 +283,17 @@ cachedir: Directory for caching the annotations
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det}
+
+    class_recs = {}
+    for img in dataset:
+        lbl = dataset.pull_label(img)
+        for det in lbl:
+            R =
+            bbox = np.array()
+            if (det[3] == classname)
+                bbox = np.array
+
+                class_recs[pull_id] = []
 
     # read dets
     detfile = detpath.format(classname)
@@ -369,7 +380,7 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
     det_file = os.path.join(output_dir, 'detections.pkl')
 
     for i in range(num_images):
-        im, gt, h, w = dataset.pull_item(i)
+        im, gt, h, w = dataset[i]
 
         x = Variable(im.unsqueeze(0))
         if args.cuda:
@@ -407,7 +418,7 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
 
 def evaluate_detections(box_list, output_dir, dataset):
     write_voc_results_file(box_list, dataset)
-    do_python_eval(output_dir)
+    do_python_eval(output_dir, dataset)
 
 
 if __name__ == '__main__':
